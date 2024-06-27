@@ -10,6 +10,8 @@
         public DateTime DataRevelacao { get; set; }
         public Guid DonoId { get; set; }
         public Usuario? Dono { get; set; }
+        public Guid? SorteadoId { get; set; }
+        public Usuario? Sorteado { get; set; }
         public List<Participante> Participantes { get; set; } = [];
         public List<Convite> Convites { get; set; } = [];
 

@@ -10,6 +10,8 @@ namespace Projeto.Models.Services
         Task<BaseResponse<string>> CriarConvite(Guid grupoId, Guid usuarioId);
         Task<List<Grupo>> GetAll(Guid userId);
         Task<Grupo?> GetById(Guid id, Guid userId);
+        Task<List<Grupo>> GetParticipando(Guid userId);
+        Task<BaseResponse> Sortear(Guid grupoId, Guid usuarioId);
         Task<BaseResponse> Update(Grupo grupo, Guid userId);
     }
 }

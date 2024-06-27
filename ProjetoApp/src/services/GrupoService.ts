@@ -7,6 +7,10 @@ export class GrupoService {
     return http.get(`${BASE_URL}/`);
   }
 
+  async participando(): Promise<IResponse<Grupo[]>> {
+    return http.get(`/participando`);
+  }
+
   async criar(grupo: CriarGrupo) {
     return http.post<IResponse<Grupo>>(`${BASE_URL}/`, grupo);
   }
@@ -26,6 +30,10 @@ export class GrupoService {
   async aceitarConvite(codigo: number) {
     return http.post<IResponse>(`${BASE_URL}/convites/${codigo}/aceitar`);
   }
+
+  async sortear(id: string) {
+    return http.post<IResponse>(`${BASE_URL}/${id}/sortear`);
+  }
 }
 
 export interface Grupo {
@@ -37,6 +45,7 @@ export interface Grupo {
   dataRevelacao: Date;
   donoId: string;
   dono: Usuario;
+  sorteado: Usuario;
   participantes: Participante[];
   convites: Convite[];
 }
@@ -75,4 +84,7 @@ export interface Usuario {
 
 export type UsuarioLogin = Pick<Usuario, "email" | "senha">;
 
-export type UsuarioCadastro = Omit<Usuario, "id" | "grupos" | "gruposParticipante">;
+export type UsuarioCadastro = Omit<
+  Usuario,
+  "id" | "grupos" | "gruposParticipante"
+>;

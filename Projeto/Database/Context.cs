@@ -58,6 +58,11 @@ namespace Projeto.Database
                     .WithOne(p => p.Grupo)
                     .HasForeignKey(p => p.GrupoId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                g.HasOne(g => g.Sorteado)
+                    .WithMany(u => u.GruposVencedores)
+                    .HasForeignKey(g => g.SorteadoId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Usuario>(u =>
@@ -75,6 +80,11 @@ namespace Projeto.Database
                     .WithOne(p => p.Usuario)
                     .HasForeignKey(p => p.UsuarioId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                u.HasMany(u => u.GruposVencedores)
+                  .WithOne(g => g.Sorteado)
+                  .HasForeignKey(g => g.SorteadoId)
+                  .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

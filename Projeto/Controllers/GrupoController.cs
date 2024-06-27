@@ -20,6 +20,13 @@ namespace Projeto.Controllers
             return Ok(response);
         }
 
+        [HttpGet("/participando")]
+        public async Task<IActionResult> GetParticipando()
+        {
+            var grupos = await grupoService.GetParticipando(User.GetUserId());
+            return Ok(grupos);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, Grupo grupo)
         {
@@ -62,6 +69,16 @@ namespace Projeto.Controllers
         public async Task<IActionResult> AceitarConvite(int codigo)
         {
             var response = await grupoService.AceitarConvite(codigo, User.GetUserId());
+            if (!response.Success)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
+
+        [HttpPost("{id}/sortear")]
+        public async Task<IActionResult> Sortear(Guid id)
+        {
+            var response = await grupoService.Sortear(id, User.GetUserId());
             if (!response.Success)
                 return BadRequest(response);
 

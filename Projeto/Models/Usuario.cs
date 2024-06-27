@@ -11,5 +11,6 @@
 
         public List<Grupo> Grupos { get; set; } = [];
         public List<Participante> GruposParticipante { get; set; } = [];
+        public List<Grupo> GruposVencedores { get; set; } = [];
     }
 }

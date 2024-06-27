@@ -1,4 +1,12 @@
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Layout } from "../../Layouts/Layout";
 import { useNavigation } from "@react-navigation/native";
 import { StackTypes } from "../../routes/stack";
@@ -8,20 +16,52 @@ import { Grupo, GrupoService } from "../../services/GrupoService";
 
 export function Grupos() {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const [gruposParticipante, setGruposParticipante] = useState<Grupo[]>([]);
   const navigation = useNavigation<StackTypes>();
 
   const grupoService = new GrupoService();
 
   useEffect(() => {
     async function loadGrupos() {
-      console.log("Carregando Grupos");
       const { data } = await grupoService.listar();
-      console.log("Grupos", data);
       setGrupos(data);
     }
 
+    async function loadGruposParticipante() {
+      const { data } = await grupoService.participando();
+      setGruposParticipante(data);
+    }
+
+    loadGruposParticipante();
     loadGrupos();
   }, []);
+
+  const aceitarConvite = async () => {
+    let codigo: string | null = "";
+
+    if (Platform.OS === "web") {
+      codigo = prompt("Digite o código do convite");
+      if (Number.isNaN(parseInt(codigo || ""))) {
+        alert("Código deve ser um numero");
+        return;
+      }
+    } else if (Platform.OS === "android") {
+      Alert.prompt(
+        "Digite o código do convite",
+        "",
+        async (codigoInput) => {
+          codigo = codigoInput;
+        },
+        "plain-text"
+      );
+    }
+
+    if (codigo) {
+      await grupoService.aceitarConvite(parseInt(codigo));
+      const { data } = await grupoService.participando();
+      setGruposParticipante(data);
+    }
+  };
 
   return (
     <Layout>
@@ -33,20 +73,68 @@ export function Grupos() {
             margin: 10,
           }}
         >
-          <Text>Grupos</Text>
+          <Text>Grupos que sou dono</Text>
           <Text onPress={() => navigation.push("CriarGrupo")}>Criar Grupo</Text>
         </View>
         <FlatList
           data={grupos}
+          renderItem={({ item }) => <Card grupo={item} mostrarParticipantes />}
+          keyExtractor={(item) => item.id}
+        />
+        {grupos.length === 0 && <Text>Nenhum grupo encontrado</Text>}
+      </View>
+      <View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            margin: 10,
+          }}
+        >
+          <Text>Grupos que estou participando</Text>
+          <Text onPress={() => aceitarConvite()}>Aceitar convite</Text>
+        </View>
+
+        <FlatList
+          data={gruposParticipante}
           renderItem={({ item }) => <Card grupo={item} />}
           keyExtractor={(item) => item.id}
         />
+        {gruposParticipante.length === 0 && (
+          <Text>Nenhum grupo encontrado</Text>
+        )}
       </View>
     </Layout>
   );
 }
-const Card = ({ grupo }: { grupo: Grupo }) => {
+const Card = ({
+  grupo,
+  mostrarParticipantes,
+}: {
+  grupo: Grupo;
+  mostrarParticipantes?: boolean;
+}) => {
   const navigation = useNavigation<StackTypes>();
+
+  const [expanded, setExpanded] = useState(false);
+
+  const grupoService = new GrupoService();
+
+  function toggleItem() {
+    setExpanded((prev) => !prev);
+  }
+
+  async function sortear() {
+    if (Platform.OS === "web") {
+      const confirma = confirm("Deseja realmente sortear?");
+      if (!confirma) return;
+    }
+
+    const { data } = await grupoService.sortear(grupo.id);
+
+    alert(data.message);
+  }
+
   return (
     <View style={styles.card}>
       <View style={styles.imageContainer}>
@@ -65,6 +153,30 @@ const Card = ({ grupo }: { grupo: Grupo }) => {
           <Text style={styles.quantidade}>
             Quantidade Máxima: {grupo.quantidadeMaxima}
           </Text>
+          {grupo.sorteado ? (
+            <Text>Sorteado: {grupo.sorteado?.nome || "Sem nome"}</Text>
+          ) : (
+            <Text>Não sorteado ainda</Text>
+          )}
+          {expanded && (
+            <View
+              style={{
+                marginTop: 10,
+              }}
+            >
+              <Text>Participantes</Text>
+              <FlatList
+                data={grupo.participantes}
+                renderItem={({ item }) => (
+                  <Text>{item?.usuario?.nome || "Sem nome"}</Text>
+                )}
+                keyExtractor={(item) => item.id}
+              />
+              {grupo.participantes.length === 0 && (
+                <Text>Nenhum participante</Text>
+              )}
+            </View>
+          )}
         </View>
         <View style={styles.buttonsContainer}>
           <Ionicons
@@ -79,6 +191,22 @@ const Card = ({ grupo }: { grupo: Grupo }) => {
             color="green"
             onPress={() => navigation.push("Convites", { id: grupo.id })}
           />
+          {!grupo.sorteado && (
+            <Ionicons
+              name="shuffle"
+              size={28}
+              color="red"
+              onPress={() => sortear()}
+            />
+          )}
+          {mostrarParticipantes && (
+            <Ionicons
+              name={expanded ? "chevron-up" : "chevron-down"}
+              size={28}
+              color="black"
+              onPress={toggleItem}
+            />
+          )}
         </View>
       </View>
     </View>

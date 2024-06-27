@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Projeto.Database;
 
@@ -11,9 +12,11 @@ using Projeto.Database;
 namespace Projeto.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240626222355_AddVencedor")]
+    partial class AddVencedor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
